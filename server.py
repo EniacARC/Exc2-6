@@ -109,6 +109,7 @@ def send(comm_socket, data):
 
 
 def main():
+    print("test")
     """
     the main function; responsible for running the server code
     """
@@ -119,29 +120,56 @@ def main():
         serv.listen(Q_LEN)
         logging.debug(f"server is listening on port {LISTEN_PORT}")
         while True:
+            # accept connection
             conn, addr = serv.accept()
             logging.info("connection established")
             disconnect = False
 
             while not disconnect:
                 try:
+                    # check if req was successful, terminate connection if not
                     req = receive(conn)
                     if req != '':
                         logging.info(f"client entered: {req}")
-
+                        # execute the command as per the client input.
+                        # checks the message was sent successfully, terminate connection if not
                         if req == "TIME":
                             curr_time = get_time()
                             logging.debug(f"sending client: {curr_time}")
                             if send(conn, curr_time) == 1:
                                 break
 
+                        elif req == "NAME":
+                            name = get_name()
+                            logging.debug(f"sending client: {name}")
+                            if send(conn, name) == 1:
+                                break
+
+                        elif req == "RAND":
+                            num = get_rand_int()
+                            logging.debug(f"sending client: {num}")
+                            if send(conn, num) == 1:
+                                break
+                        elif req == "EXIT":
+                            logging.info("user wants to disconnect")
+                            break
+
+                        else:
+                            logging.info("command is not recognised by the server!")
+                            logging.debug(f"sending client: {ERROR_INPUT_MSG}")
+                            if send(conn, ERROR_INPUT_MSG) == 1:
+                                break
+
                 except socket.error as err:
-                    print("client dis")
+                    logging.error(f"error in communication with client: {err}")
+
                 finally:
                     conn.close()
-                    logging.debug("closed client socket")
-    except:
-        print("server err")
+                    logging.info("terminated connection with client socket")
+
+    except socket.error as err:
+        logging.error(f"error while opening server socket: {err}")
+
     finally:
         serv.close()
 
