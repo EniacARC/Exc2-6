@@ -55,6 +55,7 @@ def get_name():
 def get_rand_int():
     """
     create a random number between 1-10 (including both ends)
+
     :return: the number that was generated in the range of 1-10
     :rtype: str
     """
@@ -65,8 +66,9 @@ def get_rand_int():
 def receive(comm_socket):
     """
     receives a command from the client that is 4 bytes and makes sure all the message was received
+
     :param: comm_socket
-    :type: socket
+    :type: network socket
     :return: the command from the client
     :rtype: str
     """
@@ -83,11 +85,21 @@ def receive(comm_socket):
         return pac.upper()
     except socket.error as err:
         logging.error(f"error while trying to receive message from client: {err}")
-    finally:
+        # signal something went wrong
         return ''
 
 
 def send(comm_socket, data):
+    """
+    sends the data, and it's length to the client. makes sure all the data was sent successfully
+
+    :param: comm_socket
+    :type: network socket
+    :param: data
+    :type: str
+    :return: if the message was sent successfully: 0 for yes, 1 for no
+    :rtype: int
+    """
     data_len_net = socket.htons(len(data))
     sent = 0
     try:
@@ -100,16 +112,15 @@ def send(comm_socket, data):
         while sent < len(data):
             sent += comm_socket.send(data[sent:].encode())
 
-        # signal the message was sent successful
+        # signal the message was sent successfully
         return 0
     except socket.error as err:
-        logging.error(f"error while trying to send message: {err}")
-        # signal somthing went wrong
+        logging.error(f"error while trying to send message from client: {err}")
+        # signal something went wrong
         return 1
 
 
 def main():
-    print("test")
     """
     the main function; responsible for running the server code
     """
