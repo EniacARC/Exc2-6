@@ -16,6 +16,7 @@ Q_LEN = 1
 MAX_PACKET = 1024
 COMMAND_LEN = 4
 HEADER_LEN = 2
+STOP_SERVER_CONNECTION = "EXIT"
 STRUCT_PACK_SIGN = 'H'
 ERR_INPUT = "Command must be 4 characters long!"
 
@@ -99,20 +100,43 @@ def main():
             if len(command) == COMMAND_LEN:
                 if send(client, command) != 1:
                     res = receive(client)
+
                     if res != '':
                         print(res)
                         logging.debug(f"the server responded with {res}")
-                if command == 'EXIT':
+                    else:
+                        print("error while receiving response from server!")
+                        want_to_exit = True
+
+                else:
+                    print("error! couldn't send data to server!")
+                    want_to_exit = True
+
+                if command == STOP_SERVER_CONNECTION:
                     want_to_exit = True
             else:
                 print(ERR_INPUT)
 
     except socket.error as err:
         logging.error(f"error in communication with server: {err}")
+
+    except KeyboardInterrupt:
+        logging.warning("user has stopped the program using keyboard interrupt!")
+        print("stopping client.py")
+
+        # sending the EXIT command to the server
+        # note: even if I didn't add this part the server would still close the socket,
+        # and everything would work as expected. It's just more correct to do it this way.
+        if send(client, STOP_SERVER_CONNECTION) != 1:
+            res = receive(client)
+            if res != '':
+                print(res)
+                logging.debug(f"the server responded with {res}")
+
     finally:
         client.close()
-        print("terminated client")
-        logging.info("terminating client")
+        print("client disconnected")
+        logging.info("terminated client")
 
 
 if __name__ == '__main__':
