@@ -171,6 +171,9 @@ def main():
                             logging.debug(f"sending client: {ERROR_INPUT_MSG}")
                             if send(conn, ERROR_INPUT_MSG) == 1:
                                 break
+                    else:
+                        logging.error("client didn't respond! terminating connection")
+                        disconnect = True
 
             except socket.error as err:
                 logging.error(f"error in communication with client: {err}")
