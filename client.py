@@ -87,8 +87,8 @@ def receive(client_socket):
 def main():
     # define an ipv4 tcp socket and listen for an incoming connection
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    logging.debug("heloo?")
     try:
+        logging.info(f"trying to connect to server at ({SERVER_IP}, {SERVER_PORT})")
         client.connect((SERVER_IP, SERVER_PORT))
         logging.info("client established connection with server")
         want_to_exit = False
@@ -102,16 +102,20 @@ def main():
                     if res != '':
                         print(res)
                         logging.debug(f"the server responded with {res}")
+                if command == 'EXIT':
+                    want_to_exit = True
+            else:
+                print(ERR_INPUT)
+
     except socket.error as err:
-        print("hello?")
         logging.error(f"error in communication with server: {err}")
     finally:
         client.close()
-        print("closed")
+        print("terminated client")
         logging.info("terminating client")
 
 
-if __name__ == main():
+if __name__ == '__main__':
     # make sure we have a logging directory and configure the logging
     if not os.path.isdir(LOG_DIR):
         os.makedirs(LOG_DIR)
