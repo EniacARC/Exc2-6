@@ -132,12 +132,12 @@ def main():
         logging.debug(f"server is listening on port {LISTEN_PORT}")
         while True:
             # accept connection
+            logging.info("waiting for connection...")
             conn, addr = serv.accept()
             logging.info("connection established")
             disconnect = False
-
-            while not disconnect:
-                try:
+            try:
+                while not disconnect:
                     # check if req was successful, terminate connection if not
                     req = receive(conn)
                     if req != '':
@@ -148,22 +148,22 @@ def main():
                             curr_time = get_time()
                             logging.debug(f"sending client: {curr_time}")
                             if send(conn, curr_time) == 1:
-                                break
+                                disconnect = True
 
                         elif req == "NAME":
                             name = get_name()
                             logging.debug(f"sending client: {name}")
                             if send(conn, name) == 1:
-                                break
+                                disconnect = True
 
                         elif req == "RAND":
                             num = get_rand_int()
                             logging.debug(f"sending client: {num}")
                             if send(conn, num) == 1:
-                                break
+                                disconnect = True
                         elif req == "EXIT":
                             logging.info("user wants to disconnect")
-                            break
+                            disconnect = True
 
                         else:
                             logging.info("command is not recognised by the server!")
@@ -171,12 +171,11 @@ def main():
                             if send(conn, ERROR_INPUT_MSG) == 1:
                                 break
 
-                except socket.error as err:
-                    logging.error(f"error in communication with client: {err}")
-
-                finally:
-                    conn.close()
-                    logging.info("terminated connection with client socket")
+            except socket.error as err:
+                logging.error(f"error in communication with client: {err}")
+            finally:
+                conn.close()
+                logging.info("terminated connection with client socket")
 
     except socket.error as err:
         logging.error(f"error while opening server socket: {err}")
@@ -188,6 +187,7 @@ def main():
 if __name__ == "__main__":
     # make sure we have a logging directory and configure the logging
     if not os.path.isdir(LOG_DIR):
+        print("hey")
         os.makedirs(LOG_DIR)
     logging.basicConfig(format=LOG_FORMAT, filename=LOG_FILE, level=LOG_LEVEL)
     main()
