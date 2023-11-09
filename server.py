@@ -163,6 +163,7 @@ def main():
                                 disconnect = True
                         elif req == "EXIT":
                             logging.info("user wants to disconnect")
+                            send(conn, DISCONNECT_MSG)
                             disconnect = True
 
                         else:
