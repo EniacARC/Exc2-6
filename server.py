@@ -194,4 +194,9 @@ if __name__ == "__main__":
         print("hey")
         os.makedirs(LOG_DIR)
     logging.basicConfig(format=LOG_FORMAT, filename=LOG_FILE, level=LOG_LEVEL)
+
+    # check that the server will return the expected output
+    assert get_time() == datetime.now().strftime("%H:%M:%S")
+    assert get_name() == SERVER_NAME
+    assert 1 <= int(get_rand_int()) <= 10
     main()
