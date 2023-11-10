@@ -91,10 +91,11 @@ def main():
     try:
         logging.info(f"trying to connect to server at ({SERVER_IP}, {SERVER_PORT})")
         client.connect((SERVER_IP, SERVER_PORT))
+        print("connected to server")
         logging.info("client established connection with server")
         want_to_exit = False
         while not want_to_exit:
-            command = input().upper()
+            command = input("command: ").upper()
             logging.debug(f"user entered: {command}")
 
             if len(command) == COMMAND_LEN:
@@ -102,7 +103,7 @@ def main():
                     res = receive(client)
 
                     if res != '':
-                        print(res)
+                        print(f"response: {res}")
                         logging.debug(f"the server responded with {res}")
                     else:
                         print("error while receiving response from server!")
