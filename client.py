@@ -76,8 +76,7 @@ def receive(client_socket):
         while len(packet) < packet_len:
             buf = client_socket.recv(packet_len - len(packet)).decode()
             if buf == '':
-                packet = ''
-                break
+                return ''
             packet += buf
         return packet
 
@@ -92,18 +91,19 @@ def main():
     try:
         logging.info(f"trying to connect to server at ({SERVER_IP}, {SERVER_PORT})")
         client.connect((SERVER_IP, SERVER_PORT))
+        print("connected to server")
         logging.info("client established connection with server")
         want_to_exit = False
         while not want_to_exit:
-            command = input().upper()
+            command = input("command: ").upper()
             logging.debug(f"user entered: {command}")
 
             if len(command) == COMMAND_LEN:
-                if send(client, command) == 0:
+                if send(client, command) != 1:
                     res = receive(client)
 
                     if res != '':
-                        print(res)
+                        print(f"response: {res}")
                         logging.debug(f"the server responded with {res}")
                     else:
                         print("error while receiving response from server!")
