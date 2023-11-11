@@ -76,7 +76,8 @@ def receive(client_socket):
         while len(packet) < packet_len:
             buf = client_socket.recv(packet_len - len(packet)).decode()
             if buf == '':
-                return ''
+                packet = ''
+                break
             packet += buf
         return packet
 
@@ -98,7 +99,7 @@ def main():
             logging.debug(f"user entered: {command}")
 
             if len(command) == COMMAND_LEN:
-                if send(client, command) != 1:
+                if send(client, command) == 0:
                     res = receive(client)
 
                     if res != '':

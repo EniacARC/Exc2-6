@@ -75,18 +75,20 @@ def receive(comm_socket):
     # according to the protocol established the client command should be bytes long.
 
     # makes sure all 4 bytes were sent
+    pac = ''
     try:
-        pac = ''
         while len(pac) < MAX_PACKET:
             buf = comm_socket.recv(MAX_PACKET - len(pac)).decode()
             if buf == '':
-                return ''
+                pac = ''
+                break
             pac += buf
-        return pac.upper()
     except socket.error as err:
         logging.error(f"error while trying to receive message from client: {err}")
         # signal something went wrong
-        return ''
+        pac = ''
+    finally:
+        return pac.upper()
 
 
 def send(comm_socket, data):
@@ -147,20 +149,21 @@ def main():
                         if req == "TIME":
                             curr_time = get_time()
                             logging.debug(f"sending client: {curr_time}")
-                            if send(conn, curr_time) == 1:
+                            if send(conn, curr_time) != 0:
                                 disconnect = True
 
                         elif req == "NAME":
                             name = get_name()
                             logging.debug(f"sending client: {name}")
-                            if send(conn, name) == 1:
+                            if send(conn, name) != 0:
                                 disconnect = True
 
                         elif req == "RAND":
                             num = get_rand_int()
                             logging.debug(f"sending client: {num}")
-                            if send(conn, num) == 1:
+                            if send(conn, num) != 0:
                                 disconnect = True
+
                         elif req == "EXIT":
                             logging.info("user wants to disconnect")
                             send(conn, DISCONNECT_MSG)
@@ -169,14 +172,15 @@ def main():
                         else:
                             logging.info("command is not recognised by the server!")
                             logging.debug(f"sending client: {ERROR_INPUT_MSG}")
-                            if send(conn, ERROR_INPUT_MSG) == 1:
-                                break
+                            if send(conn, ERROR_INPUT_MSG) != 0:
+                                disconnect = True
                     else:
                         logging.error("client didn't respond! terminating connection")
                         disconnect = True
 
             except socket.error as err:
                 logging.error(f"error in communication with client: {err}")
+
             finally:
                 conn.close()
                 logging.info("terminated connection with client socket")
@@ -191,7 +195,6 @@ def main():
 if __name__ == "__main__":
     # make sure we have a logging directory and configure the logging
     if not os.path.isdir(LOG_DIR):
-        print("hey")
         os.makedirs(LOG_DIR)
     logging.basicConfig(format=LOG_FORMAT, filename=LOG_FILE, level=LOG_LEVEL)
     main()
