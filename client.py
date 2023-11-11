@@ -18,7 +18,8 @@ COMMAND_LEN = 4
 HEADER_LEN = 2
 STOP_SERVER_CONNECTION = "EXIT"
 STRUCT_PACK_SIGN = 'H'
-ERR_INPUT = "Command must be 4 characters long!"
+ERR_INPUT = "ERROR! unknown command!"
+COMMANDS = ["TIME", "NAME", "RAND", "EXIT"]
 
 # define log constants
 LOG_FORMAT = '%(levelname)s | %(asctime)s | %(processName)s | %(message)s'
@@ -41,7 +42,7 @@ def send(client_socket, data):
     try:
         # send the message
         sent = 0
-        while sent < len(data):
+        while sent < COMMAND_LEN:
             sent += client_socket.send(data[sent:].encode())
 
         # signal the message was sent successfully
@@ -86,6 +87,9 @@ def receive(client_socket):
 
 
 def main():
+    """
+    the main function; responsible for running the client code
+    """
     # define an ipv4 tcp socket and listen for an incoming connection
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -94,11 +98,12 @@ def main():
         print("connected to server")
         logging.info("client established connection with server")
         want_to_exit = False
+        print(f"valid commands: {'|'.join(COMMANDS)}")
         while not want_to_exit:
             command = input("command: ").upper()
             logging.debug(f"user entered: {command}")
 
-            if len(command) == COMMAND_LEN:
+            if command in COMMANDS:
                 if send(client, command) != 1:
                     res = receive(client)
 
@@ -116,7 +121,7 @@ def main():
                 if command == STOP_SERVER_CONNECTION:
                     want_to_exit = True
             else:
-                print(ERR_INPUT)
+                print(ERR_INPUT + ' ' + '|'.join(COMMANDS))
 
     except socket.error as err:
         logging.error(f"error in communication with server: {err}")
@@ -145,4 +150,7 @@ if __name__ == '__main__':
     if not os.path.isdir(LOG_DIR):
         os.makedirs(LOG_DIR)
     logging.basicConfig(format=LOG_FORMAT, filename=LOG_FILE, level=LOG_LEVEL)
+    assert "FHGF" not in COMMANDS
+    assert 'FDT' not in COMMANDS
+    assert "RAND" in COMMANDS
     main()
